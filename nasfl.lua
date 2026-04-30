@@ -826,7 +826,7 @@ local CornerLogo = Create("ImageLabel", TopBar, {
     Position = UDim2.new(0, -10, 0, -20), 
     AnchorPoint = Vector2.new(0.5, 0.5),
     BackgroundTransparency = 1,
-    Image = "rbxassetid://114882167860607",
+    Image = "rbxassetid://91335483187539",
     ScaleType = Enum.ScaleType.Fit,
     ZIndex = 100
 })
@@ -918,7 +918,7 @@ local CornerLogo = Create("ImageLabel", TopBar, {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		BackgroundTransparency = 1,
-		Image = "rbxassetid://96678415408824",
+		Image = "rbxassetid://88089337055314",
 		ImageTransparency = 0,
 		ScaleType = Enum.ScaleType.Fit,
 		ZIndex = -4,
@@ -1672,7 +1672,7 @@ function Tab:AddButton(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
-				Image = "rbxassetid://95682083796442"
+				Image = "rbxassetid://70407052026333"
 			})
 			
 			FButton.Activated:Connect(function()
@@ -1685,7 +1685,7 @@ function Tab:AddButton(Configs)
 					local OriginalPos = ButtonIcon.Position
 					
 					-- هنا تم وضع الصورة المؤقتة
-					ButtonIcon.Image = "rbxassetid://72698884927301" 
+					ButtonIcon.Image = "rbxassetid://127147237935272" 
 					
 					-- تأثير الاهتزاز (يمين ويسار 3 مرات)
 					for i = 1, 3 do
