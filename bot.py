@@ -226,7 +226,7 @@ async def ping(ctx):
 # ============================================
 
 # اقرأ التوكن من متغير بيئة أو من ملف
-TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN = os.getenv('MTUxNzcxODMyMzE0NjUyNjcyMA.Gmo8Xa.NnHEnJ2zHgOnxTsx2OtrAJ_27XBZ_H-jV2mcew')
 
 if not TOKEN:
     # إذا لم يوجد متغير بيئة، حاول قراءة من ملف
